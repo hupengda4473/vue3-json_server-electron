@@ -1,0 +1,66 @@
+{
+  "name": "local-data-desk",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Vue 3 + Vite + JSON Server + Electron local data CRUD example",
+  "author": "Local Data Desk",
+  "main": "electron/main.cjs",
+  "scripts": {
+    "dev": "concurrently -k \"vite --host 127.0.0.1\" \"wait-on tcp:127.0.0.1:5173 && cross-env VITE_DEV_SERVER_URL=http://127.0.0.1:5173 electron .\"",
+    "dev:web": "concurrently -k \"json-server --watch db.json --host 127.0.0.1 --port 3001\" \"vite --host 127.0.0.1\"",
+    "build": "vite build",
+    "build:desktop": "npm run build && electron-builder",
+    "package:win": "npm run build && electron-builder --win nsis",
+    "test:crud": "node scripts/crud-smoke-test.cjs",
+    "test:desktop": "npm run build && electron . --smoke-test",
+    "preview": "vite preview --host 127.0.0.1",
+    "start:server": "json-server --watch db.json --host 127.0.0.1 --port 3001",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "json-server": "^0.17.4",
+    "lucide-vue-next": "^0.468.0",
+    "vue": "^3.5.13"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.1",
+    "concurrently": "^9.1.2",
+    "cross-env": "^7.0.3",
+    "electron": "^33.3.1",
+    "electron-builder": "^25.1.8",
+    "vite": "^6.1.0",
+    "wait-on": "^8.0.1"
+  },
+  "build": {
+    "appId": "com.localdatadesk.app",
+    "productName": "本地数据台",
+    "artifactName": "LocalDataDesk-${version}-${arch}.${ext}",
+    "directories": {
+      "output": "release"
+    },
+    "extraResources": [
+      {
+        "from": "electron/db.template.json",
+        "to": "db.template.json"
+      }
+    ],
+    "win": {
+      "signAndEditExecutable": false,
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "records": [
+    {
+      "id": "record-001",
+      "fullName": "林晓",
+      "company": "远山设计",
+      "phone": "138 0000 1201",
+      "email": "lin.xiao@example.com",
+      "status": "active",
+      "notes": "负责品牌升级项目，每月同步一次进度。",
+      "createdAt": "2026-10-08T03:20:00.000Z",
+      "updatedAt": "2026-11-14T02:30:00.000Z"
+    },
+    {
+      "id": "record-002",
+      "fullName": "周诚",
+      "company": "沐光科技",
+      "phone": "139 0000 2208",
+      "email": "zhou.cheng@example.com",
+      "status": "lead",
+      "notes": "关注数据看板方案，等待确认预算。",
+      "createdAt": "2026-10-19T06:15:00.000Z",
+      "updatedAt": "2026-11-12T08:10:00.000Z"
+    },
+    {
+      "id": "record-003",
+      "fullName": "陈嘉",
+      "company": "青禾供应链",
+      "phone": "136 0000 3305",
+      "email": "chen.jia@example.com",
+      "status": "active",
+      "notes": "已完成需求评审，下一步整理接口清单。",
+      "createdAt": "2026-09-22T01:40:00.000Z",
+      "updatedAt": "2026-11-09T05:45:00.000Z"
+    },
+    {
+      "id": "record-004",
+      "fullName": "许南",
+      "company": "星河教育",
+      "phone": "137 0000 4412",
+      "email": "xu.nan@example.com",
+      "status": "inactive",
+      "notes": "项目暂停，计划明年第一季度重新沟通。",
+      "createdAt": "2026-08-02T09:00:00.000Z",
+      "updatedAt": "2026-10-28T07:20:00.000Z"
+    },
+    {
+      "id": "record-005",
+      "fullName": "韩一宁111",
+      "company": "岸线文化",
+      "phone": "135 0000 5506",
+      "email": "han.yining@example.com",
+      "status": "lead",
+      "notes": "通过行业活动认识，已发送产品资料。",
+      "createdAt": "2026-11-03T03:30:00.000Z",
+      "updatedAt": "2026-11-16T01:50:24.167Z"
+    }
+  ]
+}
