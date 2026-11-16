@@ -2,6 +2,7 @@
 import {
   Archive,
   Braces,
+  Code2,
   Database,
   FolderOpen,
   FolderKanban,
@@ -12,7 +13,8 @@ import {
 } from 'lucide-vue-next'
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { RouterLink, RouterView, useRoute } from 'vue-router'
-import { API_BASE_URL, listRecords } from './api/records'
+import { listRecords } from './api/records'
+import { API_BASE_URL } from './http/request'
 
 const route = useRoute()
 const recordCount = ref(0)
@@ -131,6 +133,14 @@ onBeforeUnmount(() => {
         >
           <HardDrive :size="18" />
           <span>备份中心</span>
+        </RouterLink>
+        <RouterLink
+          to="/api-examples"
+          class="nav-item"
+          :class="{ active: route.name === 'api-examples' }"
+        >
+          <Code2 :size="18" />
+          <span>请求示例</span>
         </RouterLink>
       </nav>
 

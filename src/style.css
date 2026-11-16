@@ -1812,7 +1812,7 @@ p {
 
 .backup-stats {
   display: grid;
-  grid-template-columns: 1.4fr 0.8fr 0.8fr;
+  grid-template-columns: 1.4fr 0.8fr 0.8fr 1.25fr;
   gap: 10px;
 }
 
@@ -1833,6 +1833,10 @@ p {
   font-size: 11px;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.backup-stats strong.limit-warning {
+  color: var(--danger);
 }
 
 .backup-error {
@@ -1866,6 +1870,107 @@ p {
   line-height: 1.75;
 }
 
+.api-policy-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 20px;
+  padding: 16px 18px;
+  color: #355e4c;
+  background: #edf6f1;
+  border: 1px solid #d4e7dc;
+  border-radius: var(--radius);
+}
+
+.api-policy-banner > svg {
+  flex: 0 0 auto;
+  margin-top: 1px;
+}
+
+.api-policy-banner strong {
+  font-size: 12px;
+}
+
+.api-policy-banner p {
+  margin-top: 4px;
+  color: #5b7065;
+  font-size: 11px;
+  line-height: 1.65;
+}
+
+.api-policy-banner code {
+  padding: 2px 5px;
+  color: #245543;
+  background: #ffffff;
+  border: 1px solid #d7e6de;
+  border-radius: 4px;
+  font-family: Consolas, "Courier New", monospace;
+}
+
+.api-example-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.api-example-heading h2 {
+  color: var(--ink);
+  font-size: 18px;
+}
+
+.api-policy-chip {
+  max-width: 240px;
+  padding: 6px 9px;
+  border-radius: 5px;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 9px;
+  line-height: 1.45;
+}
+
+.api-policy-chip.required {
+  color: #26634b;
+  background: #edf7f1;
+  border: 1px solid #d4e8dc;
+}
+
+.api-policy-chip.skipped {
+  color: #8b621b;
+  background: #fcf3e2;
+  border: 1px solid #efdfbe;
+}
+
+.api-rule-grid {
+  margin-top: 16px;
+}
+
+.demo-panel {
+  margin-top: 16px;
+}
+
+.demo-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-top: 16px;
+}
+
+.demo-result {
+  display: grid;
+  gap: 5px;
+  margin-top: 14px;
+  padding: 13px 15px;
+  color: #426153;
+  background: #f1f7f3;
+  border: 1px solid #dbe9e1;
+  border-radius: 6px;
+  font-size: 11px;
+}
+
+.demo-result strong {
+  color: var(--ink);
+}
+
 @media (max-width: 900px) {
   .overview-grid,
   .schema-code-grid,
@@ -1883,6 +1988,10 @@ p {
 
   .schema-summary > div:nth-child(-n + 2) {
     border-bottom: 1px solid var(--line);
+  }
+
+  .api-example-heading {
+    flex-direction: column;
   }
 }
 

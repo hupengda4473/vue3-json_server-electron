@@ -35,6 +35,12 @@ const router = createRouter({
       meta: { title: '备份中心' },
     },
     {
+      path: '/api-examples',
+      name: 'api-examples',
+      component: () => import('../views/ApiExamplesView.vue'),
+      meta: { title: '请求示例' },
+    },
+    {
       path: '/:pathMatch(.*)*',
       redirect: '/',
     },

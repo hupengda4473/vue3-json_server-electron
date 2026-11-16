@@ -8,12 +8,14 @@ import {
 } from 'lucide-vue-next'
 import { computed, onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
+import { listDrafts } from '../api/drafts'
 import { listRecords } from '../api/records'
 import { listProjects } from '../api/projects'
 
 const activeTab = ref('records')
 const records = ref([])
 const projects = ref([])
+const drafts = ref([])
 const loading = ref(true)
 const errorMessage = ref('')
 
@@ -51,6 +53,7 @@ const currentRootJson = computed(() =>
     {
       records: records.value.slice(0, 2),
       projects: projects.value.slice(0, 2),
+      drafts: drafts.value.slice(0, 1),
     },
     null,
     2,
@@ -128,12 +131,14 @@ async function loadRecords() {
   errorMessage.value = ''
 
   try {
-    const [contactData, projectData] = await Promise.all([
+    const [contactData, projectData, draftData] = await Promise.all([
       listRecords(),
       listProjects(),
+      listDrafts(),
     ])
     records.value = contactData
     projects.value = projectData
+    drafts.value = draftData
   } catch (error) {
     errorMessage.value = `读取数据库失败：${error.message}`
   } finally {
@@ -177,8 +182,8 @@ onMounted(loadRecords)
         <strong>projects · {{ loading ? '—' : projects.length }}</strong>
       </div>
       <div>
-        <span>数据库类型</span>
-        <strong>JSON</strong>
+        <span>示例集合</span>
+        <strong>drafts · {{ loading ? '—' : drafts.length }}</strong>
       </div>
       <div>
         <span>图片存储</span>

@@ -15,16 +15,16 @@ import {
 } from 'lucide-vue-next'
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import {
-  API_BASE_URL,
   createRecord,
   deleteContactImage,
   deleteRecord,
-  getMediaUrl,
   listRecords,
   updateRecord,
 } from '../api/records'
 import ConfirmDialog from '../components/ConfirmDialog.vue'
 import RecordModal from '../components/RecordModal.vue'
+import { API_BASE_URL } from '../http/request'
+import { getMediaUrl } from '../utils/media'
 
 const records = ref([])
 const loading = ref(true)

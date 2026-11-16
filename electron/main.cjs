@@ -71,11 +71,23 @@ function ensureDatabase() {
 
 function ensureDatabaseCollections() {
   const database = JSON.parse(fs.readFileSync(dataFilePath, 'utf8'))
-  if (Array.isArray(database.projects)) return false
+  let changed = false
 
-  database.projects = []
-  atomicWriteFileSync(dataFilePath, `${JSON.stringify(database, null, 2)}\n`)
-  return true
+  if (!Array.isArray(database.projects)) {
+    database.projects = []
+    changed = true
+  }
+
+  if (!Array.isArray(database.drafts)) {
+    database.drafts = []
+    changed = true
+  }
+
+  if (changed) {
+    atomicWriteFileSync(dataFilePath, `${JSON.stringify(database, null, 2)}\n`)
+  }
+
+  return changed
 }
 
 function initializeBackupManagers() {
@@ -258,6 +270,9 @@ function getBackupStatus() {
       snapshotCount: manifest?.snapshotCount || 0,
       mediaFiles: manifest?.mediaFiles || 0,
       recordCount: manifest?.recordCount ?? null,
+      totalBytes: manifest?.totalBytes || 0,
+      maxTotalBytes: manifest?.maxTotalBytes || 10 * 1024 * 1024 * 1024,
+      sizeLimitExceeded: manifest?.sizeLimitExceeded || false,
     }
   })
 }
@@ -434,26 +449,37 @@ function startApiServer() {
 
   serverApp.use((request, response, next) => {
     const isDataWrite =
-      (request.path.startsWith('/records') ||
-        request.path.startsWith('/projects')) &&
-      ['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method)
+      ['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method) &&
+      !request.path.startsWith('/api/media') &&
+      !request.path.startsWith('/media')
 
     if (!isDataWrite) {
       next()
       return
     }
 
-    try {
-      createSnapshots(`before-${request.method.toLowerCase()}`, {
-        syncMedia: false,
-      })
-    } catch (error) {
-      response.status(503).json({
-        error: `自动备份失败，已拒绝写入：${error.message}`,
-      })
-      return
+    const snapshotPolicy = String(
+      request.get('x-data-snapshot') || 'required',
+    ).toLowerCase()
+    const shouldCreateSnapshot = snapshotPolicy !== 'skip'
+
+    if (shouldCreateSnapshot) {
+      try {
+        createSnapshots(`before-${request.method.toLowerCase()}`, {
+          syncMedia: false,
+        })
+      } catch (error) {
+        response.status(503).json({
+          error: `自动备份失败，已拒绝写入：${error.message}`,
+        })
+        return
+      }
     }
 
+    response.setHeader(
+      'X-Data-Snapshot',
+      shouldCreateSnapshot ? 'created' : 'skipped',
+    )
     response.on('finish', () => {
       if (response.statusCode >= 200 && response.statusCode < 300) {
         try {
@@ -576,6 +602,7 @@ async function runSmokeTest() {
   let secondaryBackupPath = ''
   let createdRecordId = ''
   let createdProjectId = ''
+  let skippedSnapshotProjectId = ''
 
   try {
     const response = await fetch(`${apiBaseUrl}/records`)
@@ -740,6 +767,60 @@ async function runSmokeTest() {
     }
     createdProjectId = ''
 
+    const snapshotCountBeforeSkip = fs
+      .readdirSync(backupManager.databaseBackupDirectory)
+      .filter((name) => name.startsWith('db-') && name.endsWith('.json')).length
+    const skippedSnapshotCreateResponse = await fetch(
+      `${apiBaseUrl}/projects`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Data-Snapshot': 'skip',
+        },
+        body: JSON.stringify({
+          name: 'Snapshot Skip Test',
+          category: '临时',
+          status: 'planning',
+          priority: 'low',
+          owner: 'Smoke Test',
+          notes: 'Temporary no-snapshot test',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        }),
+      },
+    )
+    if (!skippedSnapshotCreateResponse.ok) {
+      throw new Error(`无快照项目创建返回 ${skippedSnapshotCreateResponse.status}`)
+    }
+    if (
+      skippedSnapshotCreateResponse.headers.get('x-data-snapshot') !== 'skipped'
+    ) {
+      throw new Error('服务端没有确认跳过快照策略')
+    }
+
+    const skippedSnapshotProject = await skippedSnapshotCreateResponse.json()
+    skippedSnapshotProjectId = skippedSnapshotProject.id
+
+    const skippedSnapshotDeleteResponse = await fetch(
+      `${apiBaseUrl}/projects/${encodeURIComponent(skippedSnapshotProjectId)}`,
+      {
+        method: 'DELETE',
+        headers: { 'X-Data-Snapshot': 'skip' },
+      },
+    )
+    if (!skippedSnapshotDeleteResponse.ok) {
+      throw new Error(`无快照项目删除返回 ${skippedSnapshotDeleteResponse.status}`)
+    }
+    skippedSnapshotProjectId = ''
+
+    const snapshotCountAfterSkip = fs
+      .readdirSync(backupManager.databaseBackupDirectory)
+      .filter((name) => name.startsWith('db-') && name.endsWith('.json')).length
+    if (snapshotCountAfterSkip !== snapshotCountBeforeSkip) {
+      throw new Error('skip 请求仍然生成了历史快照')
+    }
+
     const deleteImageResponse = await fetch(
       `${apiBaseUrl}/api/media/${encodeURIComponent(uploadedFileName)}`,
       { method: 'DELETE' },
@@ -776,6 +857,7 @@ async function runSmokeTest() {
           backup: true,
           multiTargetBackup: true,
           projectsCollection: true,
+          snapshotSkip: true,
           imageUpload: true,
           backupDirectory: backupManager.backupDirectory,
           backupTargets: getBackupStatus(),
@@ -805,6 +887,19 @@ async function runSmokeTest() {
         await fetch(`${apiBaseUrl}/projects/${encodeURIComponent(createdProjectId)}`, {
           method: 'DELETE',
         })
+      } catch {
+        // Best-effort cleanup for a failed smoke test.
+      }
+    }
+    if (skippedSnapshotProjectId) {
+      try {
+        await fetch(
+          `${apiBaseUrl}/projects/${encodeURIComponent(skippedSnapshotProjectId)}`,
+          {
+            method: 'DELETE',
+            headers: { 'X-Data-Snapshot': 'skip' },
+          },
+        )
       } catch {
         // Best-effort cleanup for a failed smoke test.
       }

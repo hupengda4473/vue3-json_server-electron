@@ -1,25 +1,17 @@
-import { apiRequest } from './client'
+import { http } from '../http/request'
 
 export function listProjects() {
-  return apiRequest('/projects')
+  return http.get('/projects')
 }
 
-export function createProject(project) {
-  return apiRequest('/projects', {
-    method: 'POST',
-    body: JSON.stringify(project),
-  })
+export function createProject(project, options = {}) {
+  return http.post('/projects', project, options)
 }
 
-export function updateProject(id, project) {
-  return apiRequest(`/projects/${encodeURIComponent(id)}`, {
-    method: 'PATCH',
-    body: JSON.stringify(project),
-  })
+export function updateProject(id, project, options = {}) {
+  return http.patch(`/projects/${encodeURIComponent(id)}`, project, options)
 }
 
-export function deleteProject(id) {
-  return apiRequest(`/projects/${encodeURIComponent(id)}`, {
-    method: 'DELETE',
-  })
+export function deleteProject(id, options = {}) {
+  return http.delete(`/projects/${encodeURIComponent(id)}`, options)
 }

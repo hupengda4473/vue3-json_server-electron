@@ -1,7 +1,8 @@
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import { ImagePlus, LoaderCircle, Save, Trash2, X } from 'lucide-vue-next'
-import { getMediaUrl, uploadContactImage } from '../api/records'
+import { uploadContactImage } from '../api/records'
+import { getMediaUrl } from '../utils/media'
 
 const props = defineProps({
   record: {

@@ -10,8 +10,10 @@
     "dev:web": "concurrently -k \"json-server --watch db.json --host 127.0.0.1 --port 3001\" \"vite --host 127.0.0.1\"",
     "build": "vite build",
     "build:desktop": "npm run build && electron-builder",
-    "package:win": "npm run build && electron-builder --win nsis",
+    "prepare:icons": "node scripts/prepare-icons.cjs",
+    "package:win": "npm run build && npm run prepare:icons && cross-env ELECTRON_BUILDER_BINARIES_MIRROR=https://npmmirror.com/mirrors/electron-builder-binaries/ electron-builder --win nsis",
     "test:crud": "node scripts/crud-smoke-test.cjs",
+    "test:backup": "node scripts/backup-retention-test.cjs",
     "test:desktop": "npm run build && cross-env LOCAL_DATA_DESK_SMOKE_USER_DATA=.smoke-user-data LOCAL_DATA_DESK_BACKUP_DIRECTORY=.smoke-backups LOCAL_DATA_DESK_BACKUP_DIRECTORY_2=.smoke-backups-2 LOCAL_DATA_DESK_SMOKE_RESULT=.smoke-user-data/smoke-result.json electron . --smoke-test",
     "preview": "vite preview --host 127.0.0.1",
     "start:server": "json-server --watch db.json --host 127.0.0.1 --port 3001",
@@ -50,7 +52,7 @@
     ],
     "win": {
       "icon": "public/image/logo.png",
-      "signAndEditExecutable": true,
+      "signAndEditExecutable": false,
       "target": [
         {
           "target": "nsis",
@@ -64,7 +66,11 @@
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
-      "createStartMenuShortcut": true
-    }
+      "createStartMenuShortcut": true,
+      "installerIcon": "build/installerIcon.ico",
+      "uninstallerIcon": "build/uninstallerIcon.ico",
+      "installerHeaderIcon": "build/installerHeaderIcon.ico"
+    },
+    "afterPack": "scripts/after-pack.cjs"
   }
 }

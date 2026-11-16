@@ -9,7 +9,8 @@ import {
 } from 'lucide-vue-next'
 import { computed, onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
-import { getMediaUrl, listRecords } from '../api/records'
+import { listRecords } from '../api/records'
+import { getMediaUrl } from '../utils/media'
 
 const records = ref([])
 const loading = ref(true)

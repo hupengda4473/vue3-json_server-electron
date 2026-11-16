@@ -1,50 +1,28 @@
-import { API_BASE_URL, apiRequest as request } from './client'
-
-export { API_BASE_URL }
+import { http } from '../http/request'
 
 export function listRecords() {
-  return request('/records')
+  return http.get('/records')
 }
 
-export function createRecord(record) {
-  return request('/records', {
-    method: 'POST',
-    body: JSON.stringify(record),
-  })
+export function createRecord(record, options = {}) {
+  return http.post('/records', record, options)
 }
 
-export function updateRecord(id, record) {
-  return request(`/records/${encodeURIComponent(id)}`, {
-    method: 'PATCH',
-    body: JSON.stringify(record),
-  })
+export function updateRecord(id, record, options = {}) {
+  return http.patch(`/records/${encodeURIComponent(id)}`, record, options)
 }
 
-export function deleteRecord(id) {
-  return request(`/records/${encodeURIComponent(id)}`, {
-    method: 'DELETE',
-  })
+export function deleteRecord(id, options = {}) {
+  return http.delete(`/records/${encodeURIComponent(id)}`, options)
 }
 
 export function uploadContactImage(file) {
   const formData = new FormData()
   formData.append('image', file)
-
-  return request('/api/media', {
-    method: 'POST',
-    body: formData,
-  })
+  return http.post('/api/media', formData)
 }
 
-export function deleteContactImage(imagePath) {
+export function deleteContactImage(imagePath, options = {}) {
   const fileName = imagePath.split('/').pop()
-  return request(`/api/media/${encodeURIComponent(fileName)}`, {
-    method: 'DELETE',
-  })
+  return http.delete(`/api/media/${encodeURIComponent(fileName)}`, options)
 }
-
-export function getMediaUrl(imagePath) {
-  if (!imagePath) return ''
-  return `${API_BASE_URL}/${imagePath.replace(/^\/+/, '')}`
-}
-
