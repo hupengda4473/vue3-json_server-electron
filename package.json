@@ -12,7 +12,7 @@
     "build:desktop": "npm run build && electron-builder",
     "package:win": "npm run build && electron-builder --win nsis",
     "test:crud": "node scripts/crud-smoke-test.cjs",
-    "test:desktop": "npm run build && electron . --smoke-test",
+    "test:desktop": "npm run build && cross-env LOCAL_DATA_DESK_SMOKE_USER_DATA=.smoke-user-data LOCAL_DATA_DESK_BACKUP_DIRECTORY=.smoke-backups LOCAL_DATA_DESK_BACKUP_DIRECTORY_2=.smoke-backups-2 LOCAL_DATA_DESK_SMOKE_RESULT=.smoke-user-data/smoke-result.json electron . --smoke-test",
     "preview": "vite preview --host 127.0.0.1",
     "start:server": "json-server --watch db.json --host 127.0.0.1 --port 3001",
     "postinstall": "electron-builder install-app-deps"
@@ -20,8 +20,11 @@
   "dependencies": {
     "express": "^4.21.2",
     "json-server": "^0.17.4",
+    "lowdb": "^1.0.0",
     "lucide-vue-next": "^0.468.0",
-    "vue": "^3.5.13"
+    "multer": "^2.5.0",
+    "vue": "^3.5.13",
+    "vue-router": "^4.6.5"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.2.1",
@@ -46,7 +49,8 @@
       }
     ],
     "win": {
-      "signAndEditExecutable": false,
+      "icon": "public/image/logo.png",
+      "signAndEditExecutable": true,
       "target": [
         {
           "target": "nsis",

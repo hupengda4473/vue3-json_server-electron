@@ -1,31 +1,6 @@
-const queryApiBase = new URLSearchParams(window.location.search).get('apiBase')
+import { API_BASE_URL, apiRequest as request } from './client'
 
-export const API_BASE_URL = (
-  queryApiBase ||
-  import.meta.env.VITE_API_BASE_URL ||
-  'http://127.0.0.1:3001'
-).replace(/\/$/, '')
-
-async function request(path, options = {}) {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-    ...options,
-  })
-
-  if (!response.ok) {
-    const message = await response.text()
-    throw new Error(message || `请求失败：${response.status}`)
-  }
-
-  if (response.status === 204) {
-    return null
-  }
-
-  return response.json()
-}
+export { API_BASE_URL }
 
 export function listRecords() {
   return request('/records')
@@ -50,3 +25,26 @@ export function deleteRecord(id) {
     method: 'DELETE',
   })
 }
+
+export function uploadContactImage(file) {
+  const formData = new FormData()
+  formData.append('image', file)
+
+  return request('/api/media', {
+    method: 'POST',
+    body: formData,
+  })
+}
+
+export function deleteContactImage(imagePath) {
+  const fileName = imagePath.split('/').pop()
+  return request(`/api/media/${encodeURIComponent(fileName)}`, {
+    method: 'DELETE',
+  })
+}
+
+export function getMediaUrl(imagePath) {
+  if (!imagePath) return ''
+  return `${API_BASE_URL}/${imagePath.replace(/^\/+/, '')}`
+}
+

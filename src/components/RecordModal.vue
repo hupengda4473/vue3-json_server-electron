@@ -1,6 +1,7 @@
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
-import { Save, X } from 'lucide-vue-next'
+import { ImagePlus, LoaderCircle, Save, Trash2, X } from 'lucide-vue-next'
+import { getMediaUrl, uploadContactImage } from '../api/records'
 
 const props = defineProps({
   record: {
@@ -28,13 +29,18 @@ const form = reactive({
   email: props.record?.email || '',
   status: props.record?.status || 'active',
   notes: props.record?.notes || '',
+  image: props.record?.image || null,
 })
 
 const errors = reactive({})
 const nameInput = ref(null)
+const fileInput = ref(null)
+const uploading = ref(false)
+const uploadError = ref('')
 
 const title = computed(() => (props.record ? '编辑联系人' : '新建联系人'))
 const submitLabel = computed(() => (props.record ? '保存修改' : '创建联系人'))
+const isBusy = computed(() => props.saving || uploading.value)
 
 function validate() {
   Object.keys(errors).forEach((key) => delete errors[key])
@@ -55,7 +61,7 @@ function validate() {
 }
 
 function handleSubmit() {
-  if (props.saving || !validate()) return
+  if (isBusy.value || !validate()) return
 
   emit('submit', {
     fullName: form.fullName.trim(),
@@ -64,12 +70,53 @@ function handleSubmit() {
     email: form.email.trim(),
     status: form.status,
     notes: form.notes.trim(),
+    image: form.image,
   })
 }
 
 function requestClose() {
-  if (!props.saving) {
+  if (!isBusy.value) {
     emit('close')
+  }
+}
+
+function openFilePicker() {
+  fileInput.value?.click()
+}
+
+async function handleFileChange(event) {
+  const file = event.target.files?.[0]
+  event.target.value = ''
+  uploadError.value = ''
+
+  if (!file) return
+
+  const allowedTypes = ['image/png', 'image/jpeg', 'image/webp', 'image/gif']
+  if (!allowedTypes.includes(file.type)) {
+    uploadError.value = '仅支持 PNG、JPEG、WebP 或 GIF 图片'
+    return
+  }
+
+  if (file.size > 8 * 1024 * 1024) {
+    uploadError.value = '图片不能超过 8 MB'
+    return
+  }
+
+  uploading.value = true
+  try {
+    const result = await uploadContactImage(file)
+    form.image = result.image
+  } catch (error) {
+    uploadError.value = `图片上传失败：${error.message}`
+  } finally {
+    uploading.value = false
+  }
+}
+
+function removeImage() {
+  if (!isBusy.value) {
+    form.image = null
+    uploadError.value = ''
   }
 }
 
@@ -112,7 +159,7 @@ onBeforeUnmount(() => {
             type="button"
             title="关闭"
             aria-label="关闭"
-            :disabled="saving"
+            :disabled="isBusy"
             @click="requestClose"
           >
             <X :size="19" />
@@ -169,6 +216,52 @@ onBeforeUnmount(() => {
             </label>
           </div>
 
+          <div class="contact-image-field">
+            <div class="image-preview" :class="{ empty: !form.image?.path }">
+              <img
+                v-if="form.image?.path"
+                :src="getMediaUrl(form.image.path)"
+                alt="联系人图片预览"
+              />
+              <ImagePlus v-else :size="25" />
+            </div>
+
+            <div class="image-actions">
+              <span class="image-label">联系人图片</span>
+              <div class="image-action-row">
+                <input
+                  ref="fileInput"
+                  class="visually-hidden"
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp,image/gif"
+                  @change="handleFileChange"
+                />
+                <button
+                  class="button secondary"
+                  type="button"
+                  :disabled="isBusy"
+                  @click="openFilePicker"
+                >
+                  <LoaderCircle v-if="uploading" :size="17" class="spinning" />
+                  <ImagePlus v-else :size="17" />
+                  {{ uploading ? '上传中...' : form.image ? '更换图片' : '选择图片' }}
+                </button>
+                <button
+                  v-if="form.image?.path"
+                  class="button secondary image-remove-button"
+                  type="button"
+                  :disabled="isBusy"
+                  @click="removeImage"
+                >
+                  <Trash2 :size="16" />
+                  移除
+                </button>
+              </div>
+              <small class="image-hint">PNG、JPEG、WebP 或 GIF，最大 8 MB</small>
+              <small v-if="uploadError" class="field-error">{{ uploadError }}</small>
+            </div>
+          </div>
+
           <fieldset class="field status-field">
             <legend>联系状态</legend>
             <div class="status-options">
@@ -199,14 +292,14 @@ onBeforeUnmount(() => {
             <button
               class="button secondary"
               type="button"
-              :disabled="saving"
+              :disabled="isBusy"
               @click="requestClose"
             >
               取消
             </button>
-            <button class="button primary" type="submit" :disabled="saving">
+            <button class="button primary" type="submit" :disabled="isBusy">
               <Save :size="17" />
-              {{ saving ? '保存中...' : submitLabel }}
+              {{ saving ? '保存中...' : uploading ? '图片上传中...' : submitLabel }}
             </button>
           </footer>
         </form>

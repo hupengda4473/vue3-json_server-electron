@@ -55,5 +55,31 @@
       "createdAt": "2026-11-03T03:30:00.000Z",
       "updatedAt": "2026-11-15T01:50:00.000Z"
     }
+  ],
+  "projects": [
+    {
+      "id": "project-001",
+      "name": "品牌官网升级",
+      "category": "设计",
+      "status": "in_progress",
+      "priority": "high",
+      "owner": "林晓",
+      "dueDate": "2026-12-20",
+      "notes": "完成信息架构与视觉方案评审。",
+      "createdAt": "2026-11-02T02:00:00.000Z",
+      "updatedAt": "2026-11-15T06:30:00.000Z"
+    },
+    {
+      "id": "project-002",
+      "name": "客户数据看板",
+      "category": "开发",
+      "status": "planning",
+      "priority": "medium",
+      "owner": "周诚",
+      "dueDate": "2027-01-15",
+      "notes": "等待确认字段范围和权限模型。",
+      "createdAt": "2026-11-08T08:10:00.000Z",
+      "updatedAt": "2026-11-13T03:20:00.000Z"
+    }
   ]
 }

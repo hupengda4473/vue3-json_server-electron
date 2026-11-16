@@ -4,3 +4,7 @@ release/
 *.log
 .DS_Store
 .vite/
+.smoke-backups/
+.smoke-backups-2/
+.smoke-user-data/
+desktop-smoke-test.json
